@@ -65,6 +65,7 @@ future==0.18.2            # via pyjwkest
 idna==2.9                 # via requests
 isodate==0.6.0            # via zeep
 itypes==1.2.0             # via coreapi
+git+https://github.com/shadinaif/iyzipay-python.git@v1.0.38.ozogretmen#egg=iyzipay
 jinja2==2.11.2            # via coreschema
 jsonfield2==3.0.3         # via -c requirements/pins.txt, -r requirements/base.in
 kombu==3.0.37             # via celery
