@@ -38,6 +38,7 @@ class Iyzico(BasePaymentProcessor):
         """
         Constructs a new instance of the Iyzico processor.
         """
+        print('++++++++++++++++++++++++++++Iyzico.__init__')
         super(Iyzico, self).__init__(site)
 
     @cached_property
@@ -46,6 +47,7 @@ class Iyzico(BasePaymentProcessor):
         Returns Paypal API instance with appropriate configuration
         Returns: Paypal API instance
         """
+        print('++++++++++++++++++++++++++++Iyzico.paypal_api')
         return paypalrestsdk.Api({
             'mode': self.configuration['mode'],
             'client_id': self.configuration['client_id'],
@@ -54,13 +56,16 @@ class Iyzico(BasePaymentProcessor):
 
     @property
     def cancel_url(self):
+        print('++++++++++++++++++++++++++++Iyzico.cancel_url')
         return get_ecommerce_url(self.configuration['cancel_checkout_path'])
 
     @property
     def error_url(self):
+        print('++++++++++++++++++++++++++++Iyzico.error_url')
         return get_ecommerce_url(self.configuration['error_path'])
 
     def resolve_paypal_locale(self, language_code):
+        print('++++++++++++++++++++++++++++Iyzico.resolve_paypal_locale')
         default_paypal_locale = PAYPAL_LOCALES.get(re.split(r'[_-]', get_language())[0].lower())
         if not language_code:
             return default_paypal_locale
@@ -72,6 +77,7 @@ class Iyzico(BasePaymentProcessor):
         Generates a temporary Paypal WebProfile that carries the locale setting for a Paypal Payment
         and returns the id of the WebProfile
         """
+        print('++++++++++++++++++++++++++++Iyzico.create_temporary_web_profile')
         try:
             web_profile = paypalrestsdk.WebProfile({
                 "name": str(uuid.uuid1()),  # Generate a unique identifier
@@ -109,6 +115,7 @@ class Iyzico(BasePaymentProcessor):
         Returns:
              Concatenated string containing course id & title if exists.
         """
+        print('++++++++++++++++++++++++++++Iyzico.get_courseid_title')
         courseid = ''
         line_course = line.product.course
         if line_course:
@@ -133,6 +140,7 @@ class Iyzico(BasePaymentProcessor):
             GatewayError: Indicates a general error or unexpected behavior on the part of PayPal which prevented
                 a payment from being created.
         """
+        print('++++++++++++++++++++++++++++Iyzico.get_transaction_parameters')
         # PayPal requires that item names be at most 127 characters long.
         PAYPAL_FREE_FORM_FIELD_MAX_SIZE = 127
         return_url = urljoin(get_ecommerce_url(), reverse('paypal:execute'))
@@ -276,6 +284,7 @@ class Iyzico(BasePaymentProcessor):
         Returns:
             HandledProcessorResponse
         """
+        print('++++++++++++++++++++++++++++Iyzico.handle_processor_response')
         data = {'payer_id': response.get('PayerID')}
 
         # By default PayPal payment will be executed only once.
@@ -343,6 +352,7 @@ class Iyzico(BasePaymentProcessor):
         but passing `create=True` to `patch()` isn't enough to mock the
         attribute in this module.
         """
+        print('++++++++++++++++++++++++++++Iyzico._get_error')
         return payment.error  # pragma: no cover
 
     def _get_payment_sale(self, payment):
@@ -352,6 +362,7 @@ class Iyzico(BasePaymentProcessor):
         Note (CCB): We mostly expect to have a single sale and transaction per payment. If we
         ever move to a split payment scenario, this will need to be updated.
         """
+        print('++++++++++++++++++++++++++++Iyzico._get_payment_sale')
         for transaction in payment.transactions:
             for related_resource in transaction.related_resources:
                 try:
@@ -362,6 +373,7 @@ class Iyzico(BasePaymentProcessor):
         return None
 
     def issue_credit(self, order_number, basket, reference_number, amount, currency):
+        print('++++++++++++++++++++++++++++Iyzico.issue_credit')
         try:
             payment = paypalrestsdk.Payment.find(reference_number, api=self.paypal_api)
             sale = self._get_payment_sale(payment)

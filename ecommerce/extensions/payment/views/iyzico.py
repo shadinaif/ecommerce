@@ -44,6 +44,7 @@ class IyzicoPaymentExecutionView(EdxOrderPlacementMixin, View):
 
     @property
     def payment_processor(self):
+        print('++++++++++++++++++++++++++++IyzicoPaymentExecutionView.payment_processor')
         return Iyzico(self.request.site)
 
     # Disable atomicity for the view. Otherwise, we'd be unable to commit to the database
@@ -52,6 +53,7 @@ class IyzicoPaymentExecutionView(EdxOrderPlacementMixin, View):
     # at the time fulfillment is attempted, asynchronous order fulfillment tasks will fail.
     @method_decorator(transaction.non_atomic_requests)
     def dispatch(self, request, *args, **kwargs):
+        print('++++++++++++++++++++++++++++IyzicoPaymentExecutionView.dispatch')
         return super(IyzicoPaymentExecutionView, self).dispatch(request, *args, **kwargs)
 
     def _add_dynamic_discount_to_request(self, basket):
@@ -59,6 +61,7 @@ class IyzicoPaymentExecutionView(EdxOrderPlacementMixin, View):
         # The problem is that orders are being created after payment processing, and the discount is not
         # saved in the database, so it needs to be calculated again in order to save the correct info to the
         # order. REVMI-124 will create the order before payment processing, when we have the discount context.
+        print('++++++++++++++++++++++++++++IyzicoPaymentExecutionView._add_dynamic_discount_to_request')
         if waffle.flag_is_active(self.request, DYNAMIC_DISCOUNT_FLAG) and basket.lines.count() == 1:
             discount_lms_url = get_lms_url('/api/discounts/')
             lms_discount_client = EdxRestApiClient(discount_lms_url,
@@ -88,6 +91,7 @@ class IyzicoPaymentExecutionView(EdxOrderPlacementMixin, View):
             duplicate payment_id received or any other exception occurred.
 
         """
+        print('++++++++++++++++++++++++++++IyzicoPaymentExecutionView._get_basket')
         try:
             basket = PaymentProcessorResponse.objects.get(
                 processor_name=self.payment_processor.NAME,
@@ -115,6 +119,7 @@ class IyzicoPaymentExecutionView(EdxOrderPlacementMixin, View):
 
     def get(self, request):
         """Handle an incoming user returned to us by PayPal after approving payment."""
+        print('++++++++++++++++++++++++++++IyzicoPaymentExecutionView.get')
         payment_id = request.GET.get('paymentId')
         payer_id = request.GET.get('PayerID')
         logger.info(u"Payment [%s] approved by payer [%s]", payment_id, payer_id)
@@ -156,55 +161,56 @@ class IyzicoPaymentExecutionView(EdxOrderPlacementMixin, View):
         return redirect(receipt_url)
 
 
-# class PaypalProfileAdminView(View):
-#     ACTIONS = ('list', 'create', 'show', 'update', 'delete', 'enable', 'disable')
-#
-#     def dispatch(self, request, *args, **kwargs):
-#         if not request.user.is_superuser:
-#             raise Http404
-#
-#         return super(PaypalProfileAdminView, self).dispatch(request, *args, **kwargs)
-#
-#     def get(self, request, *_args, **_kwargs):
-#
-#         # Capture all output and logging
-#         out = StringIO()
-#         err = StringIO()
-#         log = StringIO()
-#
-#         log_handler = logging.StreamHandler(log)
-#         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-#         log_handler.setFormatter(formatter)
-#         logger.addHandler(log_handler)
-#
-#         action = request.GET.get('action')
-#         if action not in self.ACTIONS:
-#             return HttpResponseBadRequest("Invalid action.")
-#         profile_id = request.GET.get('id', '')
-#         json_str = request.GET.get('json', '')
-#
-#         command_params = [action]
-#         if action in ('show', 'update', 'delete', 'enable', 'disable'):
-#             command_params.append(profile_id.strip())
-#         if action in ('create', 'update'):
-#             command_params.append(json_str.strip())
-#
-#         logger.info("user %s is managing paypal profiles: %s", request.user.username, command_params)
-#
-#         success = False
-#         try:
-#             call_command('paypal_profile', *command_params,
-#                          settings=os.environ['DJANGO_SETTINGS_MODULE'], stdout=out, stderr=err)
-#             success = True
-#         except:  # pylint: disable=bare-except
-#             # we still want to present the output whether or not the command succeeded.
-#             pass
-#
-#         # Format the output for display
-#         output = u'STDOUT\n{out}\n\nSTDERR\n{err}\n\nLOG\n{log}'.format(out=out.getvalue(), err=err.getvalue(),
-#                                                                         log=log.getvalue())
-#
-#         # Remove the log capture handler
-#         logger.removeHandler(log_handler)
-#
-#         return HttpResponse(output, content_type='text/plain', status=200 if success else 500)
+class IyzicoProfileAdminView(View):
+    ACTIONS = ('list', 'create', 'show', 'update', 'delete', 'enable', 'disable')
+
+    def dispatch(self, request, *args, **kwargs):
+        print('++++++++++++++++++++++++++++IyzicoProfileAdminView.dispatch')
+        if not request.user.is_superuser:
+            raise Http404
+
+        return super(IyzicoProfileAdminView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *_args, **_kwargs):
+        print('++++++++++++++++++++++++++++IyzicoProfileAdminView.get')
+        # Capture all output and logging
+        out = StringIO()
+        err = StringIO()
+        log = StringIO()
+
+        log_handler = logging.StreamHandler(log)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        log_handler.setFormatter(formatter)
+        logger.addHandler(log_handler)
+
+        action = request.GET.get('action')
+        if action not in self.ACTIONS:
+            return HttpResponseBadRequest("Invalid action.")
+        profile_id = request.GET.get('id', '')
+        json_str = request.GET.get('json', '')
+
+        command_params = [action]
+        if action in ('show', 'update', 'delete', 'enable', 'disable'):
+            command_params.append(profile_id.strip())
+        if action in ('create', 'update'):
+            command_params.append(json_str.strip())
+
+        logger.info("user %s is managing paypal profiles: %s", request.user.username, command_params)
+
+        success = False
+        try:
+            call_command('paypal_profile', *command_params,
+                         settings=os.environ['DJANGO_SETTINGS_MODULE'], stdout=out, stderr=err)
+            success = True
+        except:  # pylint: disable=bare-except
+            # we still want to present the output whether or not the command succeeded.
+            pass
+
+        # Format the output for display
+        output = u'STDOUT\n{out}\n\nSTDERR\n{err}\n\nLOG\n{log}'.format(out=out.getvalue(), err=err.getvalue(),
+                                                                        log=log.getvalue())
+
+        # Remove the log capture handler
+        logger.removeHandler(log_handler)
+
+        return HttpResponse(output, content_type='text/plain', status=200 if success else 500)

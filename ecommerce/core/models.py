@@ -263,7 +263,10 @@ class SiteConfiguration(models.Model):
 
     def _all_payment_processors(self):
         """ Returns all processor classes declared in settings. """
+        print('shadinaif:------------------_all_payment_processors')
+        print('shadinaif:------------------settings.PAYMENT_PROCESSORS = {}'.format(settings.PAYMENT_PROCESSORS))
         all_processors = [get_processor_class(path) for path in settings.PAYMENT_PROCESSORS]
+        print('shadinaif:------------------all_processors = {}'.format(all_processors))
         return all_processors
 
     def get_payment_processors(self):
