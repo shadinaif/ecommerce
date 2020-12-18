@@ -266,12 +266,17 @@ class BasketLogicMixin:
             course_data['course_key'] = CourseKey.from_string(product.attr.course_key)
 
         try:
+            logger.info('++++++++++++++++++++++++++01')
             course = get_course_info_from_catalog(self.request.site, product)
+            logger.info('++++++++++++++++++++++++++02')
             try:
+                logger.info('++++++++++++++++++++++++++03')
                 course_data['image_url'] = course['image']['src']
+                logger.info('++++++++++++++++++++++++++04')
             except (KeyError, TypeError):
-                pass
+                logger.info('++++++++++++++++++++++++++05')
 
+            logger.info('++++++++++++++++++++++++++06')
             course_data['product_description'] = course.get('short_description', '')
             course_data['product_title'] = course.get('title', '')
 
@@ -281,7 +286,10 @@ class BasketLogicMixin:
             # template overrides can make use of them.
             course_data['course_start'] = self._deserialize_date(course.get('start'))
             course_data['course_end'] = self._deserialize_date(course.get('end'))
-        except (ReqConnectionError, SlumberBaseException, Timeout):
+            logger.info('++++++++++++++++++++++++++07')
+        except (ReqConnectionError, SlumberBaseException, Timeout) as e:
+            logger.info('++++++++++++++++++++++++++08')
+            logger.info(str(e))
             logger.exception(
                 'Failed to retrieve data from Discovery Service for course [%s].',
                 course_data['course_key'],
@@ -568,7 +576,9 @@ class BasketSummaryView(BasketLogicMixin, BasketView):
             'sdn_check': site_configuration.enable_sdn_check
         })
 
+        logger.info('=================================.........................................')
         payment_processors = site_configuration.get_payment_processors()
+        logger.info('.................payment_processors = {}'.format(payment_processors))
         if (
                 site_configuration.client_side_payment_processor and
                 waffle.flag_is_active(self.request, CLIENT_SIDE_CHECKOUT_FLAG_NAME)

@@ -143,6 +143,11 @@
             {% endif %}
 
             <div class="pull-right payment-buttons" data-basket-id="{{ basket.id }}">
+                This one
+                {% if payment_processors.length == 0 %}
+                bla
+                {% endif %}
+                is non-sense
                 {% if free_basket %}
                     <a href="{% url 'checkout:free-checkout' %}"
                        data-track-type="click"

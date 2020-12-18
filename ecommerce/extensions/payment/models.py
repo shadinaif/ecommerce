@@ -53,6 +53,24 @@ class PaypalProcessorConfiguration(SingletonModel):
         verbose_name = "Paypal Processor Configuration"
 
 
+class IyzicoWebProfile(models.Model):
+    id = models.CharField(max_length=255, primary_key=True)
+    name = models.CharField(max_length=255, unique=True)
+
+
+class IyzicoProcessorConfiguration(SingletonModel):
+    """ This is a configuration model for Iyzico Payment Processor"""
+    retry_attempts = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name=_(
+            'Number of times to retry failing Iyzico client actions (e.g., payment creation, payment execution)'
+        )
+    )
+
+    class Meta:
+        verbose_name = "Iyzico Processor Configuration"
+
+
 @python_2_unicode_compatible
 class SDNCheckFailure(TimeStampedModel):
     """ Record of SDN check failure. """
