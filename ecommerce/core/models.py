@@ -277,15 +277,19 @@ class SiteConfiguration(models.Model):
             list[BasePaymentProcessor]: Returns payment processor classes enabled for the corresponding Site
         """
         all_processors = self._all_payment_processors()
+        print('++++++++++++-----------01')
         all_processor_names = {processor.NAME for processor in all_processors}
+        print('++++++++++++-----------02')
 
         missing_processor_configurations = self.payment_processors_set - all_processor_names
+        print('++++++++++++-----------03')
         if missing_processor_configurations:
+            print('++++++++++++-----------04')
             processor_config_repr = ", ".join(missing_processor_configurations)
             log.warning(
                 'Unknown payment processors [%s] are configured for site %s', processor_config_repr, self.site.id
             )
-
+        print('++++++++++++-----------05')
         return [
             processor for processor in all_processors
             if processor.NAME in self.payment_processors_set and processor.is_enabled()

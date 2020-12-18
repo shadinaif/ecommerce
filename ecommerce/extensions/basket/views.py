@@ -518,11 +518,13 @@ class BasketAddItemsView(BasketLogicMixin, APIView):
 class BasketSummaryView(BasketLogicMixin, BasketView):
     @newrelic.agent.function_trace()
     def get_context_data(self, **kwargs):
+        print('+++++++++++++++++++++++++++++++++++++++++++BasketSummaryView.get_context_data')
         context = super(BasketSummaryView, self).get_context_data(**kwargs)
         return self._add_to_context_data(context)
 
     @newrelic.agent.function_trace()
     def get(self, request, *args, **kwargs):
+        print('+++++++++++++++++++++++++++++++++++++++++++BasketSummaryView.get')
         basket = request.basket
 
         try:
@@ -535,6 +537,7 @@ class BasketSummaryView(BasketLogicMixin, BasketView):
         return super(BasketSummaryView, self).get(request, *args, **kwargs)
 
     def _redirect_to_payment_microfrontend_if_configured(self, request):
+        print('+++++++++++++++++++++++++++++++++++++++++++BasketSummaryView._redirect_to_payment_microfrontend_if_configured')
         microfrontend_url = get_payment_microfrontend_url_if_configured(request)
         if microfrontend_url:
             # For now, the enterprise consent form validation is communicated via
@@ -551,6 +554,7 @@ class BasketSummaryView(BasketLogicMixin, BasketView):
 
     @newrelic.agent.function_trace()
     def _add_to_context_data(self, context):
+        print('+++++++++++++++++++++++++++++++++++++++++++BasketSummaryView._add_to_context_data')
         formset = context.get('formset', [])
         lines = context.get('line_list', [])
         site_configuration = self.request.site.siteconfiguration
@@ -567,7 +571,6 @@ class BasketSummaryView(BasketLogicMixin, BasketView):
             'enable_client_side_checkout': False,
             'sdn_check': site_configuration.enable_sdn_check
         })
-
         payment_processors = site_configuration.get_payment_processors()
         if (
                 site_configuration.client_side_payment_processor and
@@ -596,6 +599,7 @@ class BasketSummaryView(BasketLogicMixin, BasketView):
             A dictionary containing information about the payment processor(s) with which the
             basket view context needs to be updated with.
         """
+        print('+++++++++++++++++++++++++++++++++++++++++++BasketSummaryView._get_payment_processors_data')
         site_configuration = self.request.site.siteconfiguration
         payment_processor_class = site_configuration.get_client_side_payment_processor_class()
 
@@ -629,6 +633,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
     Business logic for the various Payment APIs.
     """
     def get_payment_api_response(self, status=None):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin.get_payment_api_response')
         """
         Serializes the payment api response.
         """
@@ -646,6 +651,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         """
         After basket updates, we need to reload the basket to ensure everything is up to date.
         """
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin.reload_basket')
         self.request.basket = get_model('basket', 'Basket').objects.get(id=self.request.basket.id)
         self.request.basket.strategy = self.request.strategy
         apply_offers_on_basket(self.request, self.request.basket)
@@ -656,6 +662,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         See https://github.com/django-oscar/django-oscar/blob/1.5.4/src/oscar/apps/basket/views.py#L92-L132
         for reference in how this is calculated by django-oscar.
         """
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._get_order_total')
         shipping_charge = Price('USD', excl_tax=Decimal(0), tax=Decimal(0))
         return OrderTotalCalculator().calculate(self.request.basket, shipping_charge)
 
@@ -666,6 +673,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         Args:
             context (dict): pre-calculated context data
         """
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._serialize_context')
         response = {
             'basket_id': self.request.basket.id,
             'is_free_basket': context['free_basket'],
@@ -679,6 +687,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         return response
 
     def _add_products(self, response, lines_data):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._add_products')
         response['products'] = [
             {
                 'course_key': getattr(line_data['line'].product.attr, 'course_key', None),
@@ -692,6 +701,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         ]
 
     def _add_total_summary(self, response, context):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._add_total_summary')
         if context['is_enrollment_code_purchase']:
             response['summary_price'] = context['line_price']
             response['summary_quantity'] = self.request.basket.num_items
@@ -703,6 +713,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         response['order_total'] = context['order_total'].incl_tax
 
     def _add_offers(self, response):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._add_offers')
         response['offers'] = [
             {
                 'provider': offer.condition.enterprise_customer_name,
@@ -716,6 +727,7 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         ]
 
     def _add_coupons(self, response, context):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._add_coupons')
         response['show_coupon_form'] = context['show_voucher_form']
         benefit = context['total_benefit_object']
         response['coupons'] = [
@@ -730,9 +742,11 @@ class PaymentApiLogicMixin(BasketLogicMixin):
         ]
 
     def _add_messages(self, response):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._add_messages')
         response['messages'] = message_utils.serialize(self.request)
 
     def _get_response_status(self, response):
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiLogicMixin._get_response_status')
         return message_utils.get_response_status(response['messages'])
 
 
@@ -746,6 +760,7 @@ class PaymentApiView(PaymentApiLogicMixin, APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):  # pylint: disable=unused-argument
+        print('+++++++++++++++++++++++++++++++++++++++++++PaymentApiView.get')
         basket = request.basket
 
         try:
@@ -763,6 +778,7 @@ class QuantityAPIView(APIView, View, PaymentApiLogicMixin):
     Note: DRF APIView wrapper allows clients to use JWT authentication
 
     """
+
     permission_classes = (IsAuthenticated,)
     http_method_names = ['post', 'options']
 
@@ -773,6 +789,7 @@ class QuantityAPIView(APIView, View, PaymentApiLogicMixin):
         Note: This only works for single-product baskets.
 
         """
+        print('+++++++++++++++++++++++++++++++++++++++++++QuantityAPIView.post')
         if request.basket.is_empty:
             return self.get_payment_api_response(status=400)
 
@@ -790,12 +807,14 @@ class QuantityAPIView(APIView, View, PaymentApiLogicMixin):
 
     def _get_first_basket_line(self):
         """ Get first line from basket. """
+        print('+++++++++++++++++++++++++++++++++++++++++++QuantityAPIView._get_first_basket_line')
         basket_lines = self.request.basket.all_lines()
         assert basket_lines
         return basket_lines[0]
 
     def _get_basket_line_form(self, basket_line):
         """ Retrieves form for the first line. """
+        print('+++++++++++++++++++++++++++++++++++++++++++QuantityAPIView._get_basket_line_form')
         form_kwargs = {
             'data': self.request.data,
             'strategy': self.request.strategy,
@@ -813,6 +832,7 @@ class QuantityAPIView(APIView, View, PaymentApiLogicMixin):
         - Offers messaging was dropped.  These messages contain HTML, but no message code (see BasketMessageGenerator).
 
         """
+        print('+++++++++++++++++++++++++++++++++++++++++++QuantityAPIView._form_valid')
         self.reload_basket()
         # Note: the original message included HTML, so the client should build its own success message
         messages.info(self.request, _('quantity successfully updated'), extra_tags='quantity-update-success-message')
@@ -820,6 +840,7 @@ class QuantityAPIView(APIView, View, PaymentApiLogicMixin):
         return self.get_payment_api_response()
 
     def _get_clean_error_messages(self, errors):
+        print('+++++++++++++++++++++++++++++++++++++++++++QuantityAPIView._get_clean_error_messages')
         msgs = []
         for error in errors:
             msgs.append(error.as_text())
@@ -829,6 +850,7 @@ class QuantityAPIView(APIView, View, PaymentApiLogicMixin):
         return ",".join(clean_msgs)
 
     def _form_invalid(self, form):
+        print('+++++++++++++++++++++++++++++++++++++++++++QuantityAPIView._form_invalid')
         """
         The following code was adapted from django-oscar's BasketView.formset_invalid.
         """
