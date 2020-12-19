@@ -576,9 +576,7 @@ class BasketSummaryView(BasketLogicMixin, BasketView):
             'sdn_check': site_configuration.enable_sdn_check
         })
 
-        logger.info('=================================.........................................')
         payment_processors = site_configuration.get_payment_processors()
-        logger.info('.................payment_processors = {}'.format(payment_processors))
         if (
                 site_configuration.client_side_payment_processor and
                 waffle.flag_is_active(self.request, CLIENT_SIDE_CHECKOUT_FLAG_NAME)

@@ -41,6 +41,7 @@ PaymentEventType = get_model('order', 'PaymentEventType')
 Source = get_model('payment', 'Source')
 SourceType = get_model('payment', 'SourceType')
 
+import inspect
 
 class EdxOrderPlacementMixin(six.with_metaclass(abc.ABCMeta, OrderPlacementMixin)):
     """ Mixin for edX-specific order placement. """
@@ -57,20 +58,28 @@ class EdxOrderPlacementMixin(six.with_metaclass(abc.ABCMeta, OrderPlacementMixin
         # Emma: this is moved from an old OrderCreationMixin class which was only in use by
         # CybersourceInterstitialView and CybersourceApplePayAuthorizationView. Not for Paypal.
         # Paypal has a different codepath for creating orders.
-
+        logger.info('---------------{}.{}'.format(type(self).__name__, inspect.stack()[0][3]))
         try:
             # Note (CCB): In the future, if we do end up shipping physical products, we will need to
             # properly implement shipping methods. For more, see
             # http://django-oscar.readthedocs.org/en/latest/howto/how_to_configure_shipping.html.
+            logger.info('---------------create_order01')
             shipping_method = NoShippingRequired()
+            logger.info('---------------create_order02')
             shipping_charge = shipping_method.calculate(basket)
+            logger.info('---------------shipping_charge = {}'.format(shipping_charge))
+            logger.info('---------------type.shipping_charge = {}'.format(type(shipping_charge)))
+            logger.info('---------------create_order03')
 
             # Note (CCB): This calculation assumes the payment processor has not sent a partial authorization,
             # thus we use the amounts stored in the database rather than those received from the payment processor.
             order_total = OrderTotalCalculator().calculate(basket, shipping_charge)
-
+            logger.info('---------------create_order04 - basket = {}'.format(basket))
+            logger.info('---------------create_order04')
             user = basket.owner
+            logger.info('---------------create_order05')
             order_number = basket.order_number
+            logger.info('---------------create_order06')
 
             order = self.handle_order_placement(
                 order_number=order_number,
@@ -83,10 +92,12 @@ class EdxOrderPlacementMixin(six.with_metaclass(abc.ABCMeta, OrderPlacementMixin
                 order_total=order_total,
                 request=request
             )
+            logger.info('---------------create_order07')
 
             return order
 
         except Exception:  # pylint: disable=broad-except
+            logger.info('---------------create_order08')
             self.log_order_placement_exception(order_number, basket.id)
             raise
 

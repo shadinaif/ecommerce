@@ -143,11 +143,6 @@
             {% endif %}
 
             <div class="pull-right payment-buttons" data-basket-id="{{ basket.id }}">
-                This one
-                {% if payment_processors.length == 0 %}
-                bla
-                {% endif %}
-                is non-sense
                 {% if free_basket %}
                     <a href="{% url 'checkout:free-checkout' %}"
                        data-track-type="click"
@@ -185,7 +180,7 @@
                 {% trans "{strong_start}Note:{strong_end} To earn a verified certificate, you must verify your identity with a {strong_start}webcam{strong_end} and a {strong_start}government-issued photo ID{strong_end}. " as tmsg %}
                 {% interpolate_html tmsg strong_start='<strong>'|safe strong_end='</strong>'|safe %}
             {% else %}
-                {% trans "{strong_start}Note:{strong_end} To complete your enrollment, select Checkout or Checkout with PayPal." as tmsg %}
+                {% trans "{strong_start}Note:{strong_end} To complete your enrollment, select Checkout with Iyzico." as tmsg %}
                 {% interpolate_html tmsg strong_start='<strong>'|safe strong_end='</strong>'|safe %}
             {% endif %}
         </div>

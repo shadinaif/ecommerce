@@ -83,43 +83,27 @@ def get_course_info_from_catalog(site, product):
         "estimated_hours": 0,
         "programs": []
     }
-    print('----------------------:01')
+
     if product.is_course_entitlement_product:
-        print('----------------------:02')
         key = product.attr.UUID
     else:
-        print('----------------------:03')
         key = CourseKey.from_string(product.attr.course_key)
-    print('----------------------:04')
+
     api = site.siteconfiguration.discovery_api_client
     partner_short_code = site.siteconfiguration.partner.short_code
 
     cache_key = u'courses_api_detail_{}{}'.format(key, partner_short_code)
     cache_key = hashlib.md5(cache_key.encode('utf-8')).hexdigest()
-    print('----------------------:05')
     course_cached_response = TieredCache.get_cached_response(cache_key)
-    print('----------------------:06')
     if course_cached_response.is_found:
-        print('----------------------:07')
         return course_cached_response.value
 
     if product.is_course_entitlement_product:
-        print('----------------------:08')
         course = api.courses(key).get()
-        print('----------------------:09')
     else:
-        print('----------------------:10')
-        print('----------------------api = {}'.format(api))
-        print('----------------------key = {}'.format(key))
-        print('----------------------api.course_runs(key) = {}'.format(api.course_runs(key)))
-        print('----------------------type(api).__name__ = {}'.format(type(api).__name__))
-        print('----------------------type(api.course_runs(key)).__name__ = {}'.format(type(api.course_runs(key)).__name__))
         course = api.course_runs(key).get(partner=partner_short_code)
-        print('----------------------:11')
 
-    print('----------------------:12')
     TieredCache.set_all_tiers(cache_key, course, settings.COURSES_API_CACHE_TIMEOUT)
-    print('----------------------:13')
     return course
 
 

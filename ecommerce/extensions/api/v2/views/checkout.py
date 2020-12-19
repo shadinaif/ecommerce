@@ -67,4 +67,5 @@ class CheckoutView(APIView):
         }
 
         serializer = CheckoutSerializer(data)
+        logger.info('-------------------serializer.data = {}'.format(serializer.data))
         return Response(serializer.data)

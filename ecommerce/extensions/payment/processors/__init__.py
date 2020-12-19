@@ -80,6 +80,8 @@ class BasePaymentProcessor(six.with_metaclass(abc.ABCMeta, object)):  # pragma: 
         Raises:
             KeyError: If no settings found for this payment processor
         """
+        print(';;;;;;;;;;;;;;;;;')
+        print(settings.PAYMENT_PROCESSOR_CONFIG)
         partner_short_code = self.site.siteconfiguration.partner.short_code
         return settings.PAYMENT_PROCESSOR_CONFIG[partner_short_code.lower()][self.NAME.lower()]
 
